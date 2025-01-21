@@ -1,0 +1,7 @@
+[masters]
+node-01 ansible_host=x.x.x.x ansible_user=root 
+[workers]
+
+[k8s_cluster:children]
+masters
+workers

@@ -1,0 +1,39 @@
+- name: Deploy RKE2
+  hosts: node-01
+  become: yes
+
+  tasks:
+    - name: Stop and disable firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: no
+    
+    - name: Ensure SELinux is permanently disabled
+      ansible.builtin.replace:
+        path: /etc/selinux/config
+        regexp: '^SELINUX=.*'
+        replace: 'SELINUX=disabled'
+      notify:
+        - Reboot if SELinux was enabled
+
+    - name: Ensure SELinux is disabled for the current session
+      ansible.builtin.command:
+        cmd: setenforce 0
+      when: ansible_selinux.status == "enabled"
+    
+    - name: Ensure the /etc/NetworkManager/conf.d/rke2-canal.conf file exists with required content
+      ansible.builtin.copy:
+        dest: /etc/NetworkManager/conf.d/rke2-canal.conf
+        content: |
+          [keyfile]
+          unmanaged-devices=interface-name:cali*;interface-name:flannel*
+        owner: root
+        group: root
+        mode: '0644'
+    
+  handlers:
+    - name: Reboot if SELinux was enabled
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply SELinux changes"
+        pre_reboot_delay: 5

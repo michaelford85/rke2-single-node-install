@@ -1,0 +1,29 @@
+- name: Deploy RKE2
+  hosts: node-01
+  become: yes
+
+  vars:
+    rke2_version: v1.32.0+rke2r1
+    rke2_airgap_mode: yes
+    rke2_airgap_implementation: copy
+    rke2_artifact_path: /rke2/artifact
+
+    #Local path of the artifact files for RKE2 install
+    rke2_airgap_copy_sourcepath: /home/mford/rke2/artifact
+    rke2_cni:
+      - calico
+    rke2_artifact:
+      - sha256sum-{{ rke2_architecture }}.txt
+      - rke2.linux-{{ rke2_architecture }}.tar.gz
+      - rke2-images.linux-{{ rke2_architecture }}.tar.zst
+    rke2_airgap_copy_additional_tarballs:
+      - rke2-images-calico.linux-{{ rke2_architecture }}.tar.gz
+    rke2_additional_sans:
+     - "x.x.x.x" #IP Address of the Kube API Server
+    rke2_download_kubeconf: true
+
+  tasks:
+
+    - name: Include the RKE2 install role
+      ansible.builtin.include_role:
+        name: lablabs.rke2

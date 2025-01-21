@@ -1,0 +1,10 @@
+---
+roles:
+# With just the collection name
+- name: lablabs.rke2
+  version: 1.38.7
+
+collections:
+# With just the collection name
+- name: community.general
+  version: 10.2.0
